@@ -1,0 +1,191 @@
+[
+    {
+        "id": "trigger_borrow",
+        "type": "server-state-changed",
+        "name": "เมื่อกด บันทึกการยืม",
+        "server": "",
+        "entityidfilter": "script.log_borrow_action",
+        "entityidfiltertype": "exact",
+        "outputinitially": false,
+        "state_type": "str",
+        "haltifstate": "on",
+        "halt_if_type": "str",
+        "halt_if_compare": "is",
+        "outputs": 2,
+        "outputProperties": [
+            {
+                "property": "payload",
+                "propertyType": "msg",
+                "value": "",
+                "valueType": "entityState"
+            }
+        ],
+        "x": 160,
+        "y": 100,
+        "wires": [
+            [
+                "get_user"
+            ],
+            []
+        ]
+    },
+    {
+        "id": "get_user",
+        "type": "api-current-state",
+        "name": "Get User",
+        "server": "",
+        "outputs": 1,
+        "halt_if": "",
+        "halt_if_type": "str",
+        "halt_if_compare": "is",
+        "entity_id": "input_text.borrower_name",
+        "state_type": "str",
+        "blockInputOverrides": false,
+        "outputProperties": [
+            {
+                "property": "payload.user",
+                "propertyType": "msg",
+                "value": "",
+                "valueType": "entityState"
+            }
+        ],
+        "x": 360,
+        "y": 100,
+        "wires": [
+            [
+                "get_item"
+            ]
+        ]
+    },
+    {
+        "id": "get_item",
+        "type": "api-current-state",
+        "name": "Get Item",
+        "server": "",
+        "outputs": 1,
+        "halt_if": "",
+        "halt_if_type": "str",
+        "halt_if_compare": "is",
+        "entity_id": "input_select.borrow_item",
+        "state_type": "str",
+        "blockInputOverrides": false,
+        "outputProperties": [
+            {
+                "property": "payload.item",
+                "propertyType": "msg",
+                "value": "",
+                "valueType": "entityState"
+            }
+        ],
+        "x": 520,
+        "y": 100,
+        "wires": [
+            [
+                "get_due"
+            ]
+        ]
+    },
+    {
+        "id": "get_due",
+        "type": "api-current-state",
+        "name": "Get Due Date",
+        "server": "",
+        "outputs": 1,
+        "halt_if": "",
+        "halt_if_type": "str",
+        "halt_if_compare": "is",
+        "entity_id": "input_datetime.borrow_due_date",
+        "state_type": "str",
+        "blockInputOverrides": false,
+        "outputProperties": [
+            {
+                "property": "payload.due",
+                "propertyType": "msg",
+                "value": "",
+                "valueType": "entityState"
+            }
+        ],
+        "x": 700,
+        "y": 100,
+        "wires": [
+            [
+                "format_sql"
+            ]
+        ]
+    },
+    {
+        "id": "format_sql",
+        "type": "template",
+        "name": "Format SQL",
+        "field": "topic",
+        "fieldType": "msg",
+        "format": "handlebars",
+        "syntax": "mustache",
+        "template": "INSERT INTO borrow_log (item, user, due_date, timestamp) VALUES ('{{{payload.item}}}', '{{{payload.user}}}', '{{{payload.due}}}', CURRENT_TIMESTAMP);",
+        "output": "str",
+        "x": 890,
+        "y": 100,
+        "wires": [
+            [
+                "sqlite_insert"
+            ]
+        ]
+    },
+    {
+        "id": "sqlite_insert",
+        "type": "sqlite",
+        "mydb": "borrow_db",
+        "sqlquery": "msg.topic",
+        "sql": "",
+        "name": "Save to DB",
+        "x": 1070,
+        "y": 100,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "startup_inject",
+        "type": "inject",
+        "name": "สร้างตาราง (On Startup)",
+        "props": [
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": true,
+        "onceDelay": 0.1,
+        "topic": "CREATE TABLE IF NOT EXISTS borrow_log (id INTEGER PRIMARY KEY AUTOINCREMENT, item TEXT, user TEXT, due_date TEXT, timestamp DATETIME DEFAULT CURRENT_TIMESTAMP);",
+        "payload": "",
+        "payloadType": "date",
+        "x": 200,
+        "y": 200,
+        "wires": [
+            [
+                "sqlite_create"
+            ]
+        ]
+    },
+    {
+        "id": "sqlite_create",
+        "type": "sqlite",
+        "mydb": "borrow_db",
+        "sqlquery": "msg.topic",
+        "sql": "",
+        "name": "Create Table",
+        "x": 430,
+        "y": 200,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "borrow_db",
+        "type": "sqlitedb",
+        "db": "/config/database/borrow_history.db",
+        "mode": "RWC"
+    }
+]

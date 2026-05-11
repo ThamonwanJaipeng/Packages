@@ -1,0 +1,128 @@
+############################################################
+# INPUTS
+############################################################
+
+input_text:
+  borrower_name:
+    name: "ชื่อผู้ยืม"
+    icon: mdi:account
+
+input_select:
+  borrow_item:
+    name: "อุปกรณ์"
+    options:
+      - "Dell Laptop"
+      - "iPad Pro"
+      - "Sony Camera"
+    icon: mdi:devices
+
+  borrow_status:
+    name: "สถานะการยืม"
+    options:
+      - "ว่าง"
+      - "ถูกยืม"
+    icon: mdi:list-status
+
+input_datetime:
+  return_date:
+    name: "วันที่คืน"
+    has_date: true
+    has_time: false
+    icon: mdi:calendar
+
+############################################################
+# SCRIPTS
+############################################################
+
+script:
+
+  borrow_item_script:
+    alias: ยืมอุปกรณ์
+    sequence:
+      - service: input_select.select_option
+        target:
+          entity_id: input_select.borrow_status
+        data:
+          option: "ถูกยืม"
+
+      - service: persistent_notification.create
+        data:
+          title: "ยืมอุปกรณ์แล้ว"
+          message: >
+            ผู้ยืม:
+            {{ states('input_text.borrower_name') }}
+
+            📦 อุปกรณ์:
+            {{ states('input_select.borrow_item') }}
+
+            📅 วันคืน:
+            {{ states('input_datetime.return_date') }}
+
+  ##########################################################
+  # RETURN SCRIPT
+  ##########################################################
+
+  return_item_script:
+
+    alias: คืนอุปกรณ์
+
+    sequence:
+
+      - service: input_select.select_option
+
+        target:
+          entity_id: input_select.borrow_status
+
+        data:
+          option: "ว่าง"
+
+      - service: input_text.set_value
+
+        target:
+          entity_id: input_text.borrower_name
+
+        data:
+          value: ""
+
+      - service: persistent_notification.create
+
+        data:
+          title: "คืนอุปกรณ์แล้ว"
+
+          message: >
+            คืน
+            {{ states('input_select.borrow_item') }}
+            เรียบร้อยแล้ว
+
+############################################################
+# AUTOMATIONS
+############################################################
+
+automation:
+
+  - alias: แจ้งเตือนคืนอุปกรณ์
+
+    trigger:
+
+      - platform: time
+        at: "18:00:00"
+
+    condition:
+
+      - condition: template
+
+        value_template: >
+          {{ now().strftime('%Y-%m-%d') ==
+             states('input_datetime.return_date')[0:10] }}
+
+    action:
+
+      - service: persistent_notification.create
+
+        data:
+
+          title: "แจ้งเตือนคืนอุปกรณ์"
+
+          message: >
+            📦 ถึงกำหนดคืน:
+            {{ states('input_select.borrow_item') }}

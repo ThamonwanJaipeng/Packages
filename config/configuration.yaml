@@ -1,0 +1,40 @@
+homeassistant:
+  packages: !include_dir_named packages # เปิดใช้งานโฟลเดอร์ packages
+
+default_config:
+frontend:
+  extra_module_url:
+    - /local/js/borrow-card.js # เรียกใช้งาน Custom JS ถ้ามี
+  themes: !include themes.yaml
+
+# เชื่อมโยงไฟล์อื่นๆ ตามโครงสร้าง
+automation: !include automations.yaml
+script: !include scripts.yaml
+scene: !include scenes.yaml
+template: !include templates/borrow_templates.yaml
+homeassistant:
+  packages: !include_dir_named packages
+
+lovelace:
+  mode: yaml
+
+  dashboards:
+    borrow-dashboard:
+      mode: yaml
+      title: Borrow System
+      icon: mdi:archive-arrow-up
+      show_in_sidebar: true
+      filename: dashboards/borrow-dashboard.yaml
+homeassistant:
+  packages: !include_dir_named packages
+
+lovelace:
+  mode: yaml
+
+  dashboards:
+    borrow-dashboard:
+      mode: yaml
+      title: Borrow System
+      icon: mdi:archive-arrow-up
+      show_in_sidebar: true
+      filename: dashboards/borrow-dashboard.yaml

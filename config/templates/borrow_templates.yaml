@@ -1,0 +1,7 @@
+- sensor:
+    - name: "Borrow Days Remaining"
+      unit_of_measurement: "Days"
+      state: >
+        {% set due = state_attr('input_datetime.borrow_due_date', 'timestamp') %}
+        {% set now = as_timestamp(now()) %}
+        {{ ((due - now) / 86400) | round(0, 'ceil') }}

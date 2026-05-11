@@ -1,0 +1,73 @@
+title: Borrow System
+views:
+  - title: ระบบยืมของ
+
+    path: borrow
+
+    icon: mdi:archive
+
+    cards:
+
+      - type: markdown
+
+        content: |
+
+          # 📦 ระบบยืมอุปกรณ์
+
+          ระบบจัดการการยืมคืนอุปกรณ์
+
+      - type: entities
+
+        title: ฟอร์มยืมอุปกรณ์
+
+        show_header_toggle: false
+
+        entities:
+
+          - entity: input_text.borrower_name
+
+          - entity: input_select.borrow_item
+
+          - entity: input_datetime.return_date
+
+          - entity: input_select.borrow_status
+
+      - type: horizontal-stack
+
+        cards:
+
+          - type: button
+
+            name: ยืนยันการยืม
+
+            icon: mdi:clipboard-check
+
+            tap_action:
+
+              action: call-service
+
+              service: script.borrow_item_script
+
+          - type: button
+
+            name: คืนอุปกรณ์
+
+            icon: mdi:archive-refresh
+
+            tap_action:
+
+              action: call-service
+
+              service: script.return_item_script
+
+      - type: entity
+
+        entity: input_select.borrow_status
+
+        name: สถานะปัจจุบัน
+
+      - type: entity
+
+        entity: sensor.borrow_summary
+
+        name: สรุปการยืม
